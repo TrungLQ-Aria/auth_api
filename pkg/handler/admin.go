@@ -2,6 +2,8 @@ package handler
 
 import (
 	"ema_sound_clone_api/internal/utils/response"
+	"ema_sound_clone_api/pkg/model/request"
+	"ema_sound_clone_api/pkg/usecase"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,7 +21,21 @@ func NewAdmin() Admin {
 }
 
 func (admin) CreateAdminUserByDev(c echo.Context) error {
-	return response.R200(c, nil)
+	var (
+		req request.AdminUserCreateByDevRequest
+		uc  = usecase.NewAdmin()
+	)
+
+	if err := c.Bind(&req); err != nil {
+		return response.R400(c, nil, err.Error())
+	}
+
+	res, err := uc.CreateUserAdminByDev(req)
+	if err != nil {
+		return response.R400(c, nil, err.Error())
+	}
+
+	return response.R200(c, res)
 }
 
 func (admin) SignIn(c echo.Context) error {

@@ -13,6 +13,8 @@ require (
 require (
 	github.com/go-sql-driver/mysql v1.7.0 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
+	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
+	github.com/google/uuid v1.4.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect

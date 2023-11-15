@@ -1,6 +1,7 @@
 package response
 
 type AdminUserCreateResponse struct {
-	Username string `json:"username"`
+	Email    string `json:"email"`
+	Name     string `json:"name"`
 	Password string `json:"password"`
 }
