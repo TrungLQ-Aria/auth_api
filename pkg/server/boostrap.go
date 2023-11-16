@@ -20,5 +20,5 @@ func Boostrap(e *echo.Echo) {
 		log.Panicf("Failed migrate")
 	}
 
-	router.Init(e)
+	router.Init(e, *env)
 }

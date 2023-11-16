@@ -9,3 +9,7 @@ type AdminUserLoginRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type AdminUserRefreshToken struct {
+	RefreshToken string `json:"refreshToken"`
+}

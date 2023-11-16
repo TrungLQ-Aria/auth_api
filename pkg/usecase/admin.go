@@ -1,7 +1,8 @@
 package usecase
 
 import (
-	db2 "ema_sound_clone_api/internal/db"
+	"ema_sound_clone_api/config"
+	"ema_sound_clone_api/internal/db"
 	"ema_sound_clone_api/internal/utils/auth"
 	"ema_sound_clone_api/internal/utils/crypter"
 	"ema_sound_clone_api/internal/utils/random"
@@ -11,11 +12,14 @@ import (
 	"ema_sound_clone_api/pkg/repository"
 	"errors"
 	"gorm.io/gorm"
+	"strconv"
 	"time"
 )
 
 type Admin interface {
-	CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res *response.AdminUserCreateResponse, err error)
+	CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res *responsemodel.AdminUserCreateResponse, err error)
+	SignIn(req request.AdminUserLoginRequest) (res *responsemodel.AdminLoginResponse, err error)
+	RefreshToken(req request.AdminUserRefreshToken) (res *responsemodel.AdminLoginResponse, err error)
 }
 
 type admin struct {
@@ -27,11 +31,15 @@ func NewAdmin() Admin {
 
 const (
 	ErrAdminUserAlreadyExist = "admin user already exists"
+	ErrAdminUserNotFound     = "admin user not found"
+	ErrAccountAdminUserIsNil = "admin user account is nill"
+	ErrRefreshTokenInvalid   = "invalid refresh token"
+	ErrInvalidPassword       = "invalid email or password"
 )
 
-func (admin) CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res *response.AdminUserCreateResponse, err error) {
+func (admin) CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res *responsemodel.AdminUserCreateResponse, err error) {
 	var (
-		d   = db2.GetDb()
+		d   = db.GetDb()
 		rp  = repository.NewAdmin()
 		now = time.Now()
 	)
@@ -67,10 +75,120 @@ func (admin) CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res 
 			return err
 		}
 
-		res = &response.AdminUserCreateResponse{
+		res = &responsemodel.AdminUserCreateResponse{
 			Email:    req.Email,
 			Name:     req.Name,
 			Password: pw,
+		}
+
+		return nil
+	})
+
+	return res, err
+}
+
+func (admin) SignIn(req request.AdminUserLoginRequest) (res *responsemodel.AdminLoginResponse, err error) {
+	var (
+		d   = db.GetDb()
+		rp  = repository.NewAdmin()
+		now = time.Now()
+		env = config.GetEnv()
+	)
+
+	adminUser, err := rp.FindBySignIn(d, req.Email)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = errors.New(ErrAdminUserNotFound)
+		}
+		return nil, err
+	}
+
+	err = d.Transaction(func(tx *gorm.DB) error {
+		var err error
+
+		if err = crypter.CompareWithHexString(adminUser.Account.Password, req.Password); err != nil {
+			return errors.New(ErrInvalidPassword)
+		}
+
+		token := auth.Issue(now)
+
+		// assign new token
+		if adminUser.Account == nil || adminUser.Account.RefreshToken == nil {
+			return errors.New(ErrAccountAdminUserIsNil)
+		}
+		adminUser.Account.RefreshToken.Token = token.RefreshToken
+		adminUser.Account.RefreshToken.IssuedAt = token.IssueAt
+		adminUser.Account.RefreshToken.AccessTokenID = token.ID.String()
+
+		if err = rp.UpdateRefreshToken(d, adminUser); err != nil {
+			return err
+		}
+
+		claims := auth.NewClaims(token.ID, strconv.Itoa(int(adminUser.Account.ID)), adminUser.Email, now)
+
+		accessToken, err := auth.Sign(env.AdminJWTKey, &claims)
+		if err != nil {
+			return err
+		}
+
+		res = &responsemodel.AdminLoginResponse{
+			AccessToken:  accessToken,
+			RefreshToken: token.RefreshToken,
+		}
+
+		return nil
+	})
+
+	return res, err
+}
+
+func (admin) RefreshToken(req request.AdminUserRefreshToken) (res *responsemodel.AdminLoginResponse, err error) {
+	var (
+		d   = db.GetDb()
+		rp  = repository.NewAdmin()
+		now = time.Now()
+		env = config.GetEnv()
+	)
+
+	adminUser, err := rp.FindByRefreshToken(d, req.RefreshToken)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			err = errors.New(ErrAdminUserNotFound)
+		}
+		return nil, err
+	}
+
+	if adminUser.Account.RefreshToken.Expired(now) {
+		return nil, errors.New(ErrRefreshTokenInvalid)
+	}
+
+	err = d.Transaction(func(tx *gorm.DB) error {
+		var err error
+
+		token := auth.Issue(now)
+
+		// assign new token
+		if adminUser.Account == nil || adminUser.Account.RefreshToken == nil {
+			return errors.New(ErrAccountAdminUserIsNil)
+		}
+		adminUser.Account.RefreshToken.Token = token.RefreshToken
+		adminUser.Account.RefreshToken.IssuedAt = token.IssueAt
+		adminUser.Account.RefreshToken.AccessTokenID = token.ID.String()
+
+		if err = rp.UpdateRefreshToken(d, adminUser); err != nil {
+			return err
+		}
+
+		claims := auth.NewClaims(token.ID, strconv.Itoa(int(adminUser.Account.ID)), adminUser.Email, now)
+
+		accessToken, err := auth.Sign(env.AdminJWTKey, &claims)
+		if err != nil {
+			return err
+		}
+
+		res = &responsemodel.AdminLoginResponse{
+			AccessToken:  accessToken,
+			RefreshToken: token.RefreshToken,
 		}
 
 		return nil
