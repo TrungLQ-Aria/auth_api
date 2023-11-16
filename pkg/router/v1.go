@@ -11,15 +11,16 @@ func VersionOne(v1 *echo.Group, env config.Env) {
 	adminGroup := v1.Group("/admins")
 
 	var (
-		h = handler.NewAdmin()
-		a = routermiddleware.NewAuthMiddleware(env)
+		h         = handler.NewAdmin()
+		authDev   = routermiddleware.DevAPIKeyAuthentication(env)
+		authAdmin = routermiddleware.AdminAuthentication(env)
 	)
 
-	adminGroup.POST("", h.CreateAdminUserByDev, a.DevAPIKeyAuthentication())
+	adminGroup.POST("", h.CreateAdminUserByDev, authDev)
 
 	adminGroup.POST("/sign-in", h.SignIn)
 
 	adminGroup.POST("/access-token", h.RefreshToken)
 
-	adminGroup.GET("", h.GetAllAdminUser, a.AdminAuthentication())
+	adminGroup.GET("", h.GetAllAdminUser, authAdmin)
 }

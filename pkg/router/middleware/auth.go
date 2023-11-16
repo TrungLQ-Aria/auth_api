@@ -9,28 +9,11 @@ import (
 	"strings"
 )
 
-type AuthMiddleware interface {
-	DevAPIKeyAuthentication() echo.MiddlewareFunc
-	AdminAuthentication() echo.MiddlewareFunc
-}
-
-type authMiddleware struct {
-	DevApikey         string
-	AdminJWTSecretKey string
-}
-
-func NewAuthMiddleware(env config.Env) AuthMiddleware {
-	return &authMiddleware{
-		DevApikey:         env.DevApiKey,
-		AdminJWTSecretKey: env.AdminJWTKey,
-	}
-}
-
-func (m authMiddleware) DevAPIKeyAuthentication() echo.MiddlewareFunc {
+func DevAPIKeyAuthentication(env config.Env) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			apikey := c.QueryParam("apikey")
-			if m.DevApikey != apikey {
+			if env.DevApiKey != apikey {
 				return response.R401(c, nil, "invalid api key")
 			}
 
@@ -39,7 +22,7 @@ func (m authMiddleware) DevAPIKeyAuthentication() echo.MiddlewareFunc {
 	}
 }
 
-func (m authMiddleware) AdminAuthentication() echo.MiddlewareFunc {
+func AdminAuthentication(env config.Env) echo.MiddlewareFunc {
 	return func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {
 			if bearerToken := c.Request().Header.Get("Authorization"); bearerToken != "" {
@@ -49,7 +32,7 @@ func (m authMiddleware) AdminAuthentication() echo.MiddlewareFunc {
 
 				token := strings.Split(bearerToken, " ")[1]
 
-				claims, err := auth.UnSign(m.AdminJWTSecretKey, token)
+				claims, err := auth.UnSign(env.AdminJWTKey, token)
 				if err != nil || claims.Valid() != nil {
 					return response.R401(c, nil, "")
 				}
