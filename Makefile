@@ -9,3 +9,12 @@ export ADMIN_JWT_SECRET_KEY=aria_inc_private
 
 run dev:
 	go run main.go
+
+test:
+	go test github.com/trungaria/auth_api.git/... -v
+
+api-gen.type:
+	oapi-codegen -generate "types" -package openapi openapi.yml > pkg/handler/openapi/type.gen.go
+
+api-gen.server:
+	oapi-codegen -generate "server" -package openapi openapi.yml > pkg/handler/openapi/server.gen.go

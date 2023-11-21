@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ema_sound_clone_api/config"
-	"ema_sound_clone_api/pkg/server"
+	"github.com/trungaria/auth_api.git/config"
+	"github.com/trungaria/auth_api.git/pkg/server"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"

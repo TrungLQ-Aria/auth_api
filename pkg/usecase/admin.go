@@ -1,25 +1,24 @@
 package usecase
 
 import (
-	"ema_sound_clone_api/config"
-	"ema_sound_clone_api/internal/db"
-	"ema_sound_clone_api/internal/utils/auth"
-	"ema_sound_clone_api/internal/utils/crypter"
-	"ema_sound_clone_api/internal/utils/random"
-	"ema_sound_clone_api/pkg/model/entity"
-	"ema_sound_clone_api/pkg/model/request"
-	"ema_sound_clone_api/pkg/model/response"
-	"ema_sound_clone_api/pkg/repository"
 	"errors"
+	"github.com/trungaria/auth_api.git/config"
+	"github.com/trungaria/auth_api.git/internal/db"
+	"github.com/trungaria/auth_api.git/internal/utils/auth"
+	"github.com/trungaria/auth_api.git/internal/utils/crypter"
+	"github.com/trungaria/auth_api.git/internal/utils/random"
+	"github.com/trungaria/auth_api.git/pkg/handler/openapi"
+	"github.com/trungaria/auth_api.git/pkg/model/entity"
+	"github.com/trungaria/auth_api.git/pkg/repository"
 	"gorm.io/gorm"
 	"strconv"
 	"time"
 )
 
 type Admin interface {
-	CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res *responsemodel.AdminUserCreateResponse, err error)
-	SignIn(req request.AdminUserLoginRequest) (res *responsemodel.AdminLoginResponse, err error)
-	RefreshToken(req request.AdminUserRefreshToken) (res *responsemodel.AdminLoginResponse, err error)
+	CreateUserAdminByDev(req openapi.AdminUserCreateRequest) (res *openapi.AdminUserCreateResponse, err error)
+	SignIn(req openapi.AdminUserSignInRequest) (res *openapi.AdminUserSignInResponse, err error)
+	RefreshToken(req openapi.PostV1AdminUserAccessTokenParams) (res *openapi.AdminUserSignInResponse, err error)
 }
 
 type admin struct {
@@ -37,7 +36,7 @@ const (
 	ErrInvalidPassword       = "invalid email or password"
 )
 
-func (admin) CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res *responsemodel.AdminUserCreateResponse, err error) {
+func (admin) CreateUserAdminByDev(req openapi.AdminUserCreateRequest) (res *openapi.AdminUserCreateResponse, err error) {
 	var (
 		d   = db.GetDb()
 		rp  = repository.NewAdmin()
@@ -75,7 +74,7 @@ func (admin) CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res 
 			return err
 		}
 
-		res = &responsemodel.AdminUserCreateResponse{
+		res = &openapi.AdminUserCreateResponse{
 			Email:    req.Email,
 			Name:     req.Name,
 			Password: pw,
@@ -87,7 +86,7 @@ func (admin) CreateUserAdminByDev(req request.AdminUserCreateByDevRequest) (res 
 	return res, err
 }
 
-func (admin) SignIn(req request.AdminUserLoginRequest) (res *responsemodel.AdminLoginResponse, err error) {
+func (admin) SignIn(req openapi.AdminUserSignInRequest) (res *openapi.AdminUserSignInResponse, err error) {
 	var (
 		d   = db.GetDb()
 		rp  = repository.NewAdmin()
@@ -131,7 +130,7 @@ func (admin) SignIn(req request.AdminUserLoginRequest) (res *responsemodel.Admin
 			return err
 		}
 
-		res = &responsemodel.AdminLoginResponse{
+		res = &openapi.AdminUserSignInResponse{
 			AccessToken:  accessToken,
 			RefreshToken: token.RefreshToken,
 		}
@@ -142,7 +141,7 @@ func (admin) SignIn(req request.AdminUserLoginRequest) (res *responsemodel.Admin
 	return res, err
 }
 
-func (admin) RefreshToken(req request.AdminUserRefreshToken) (res *responsemodel.AdminLoginResponse, err error) {
+func (admin) RefreshToken(req openapi.PostV1AdminUserAccessTokenParams) (res *openapi.AdminUserSignInResponse, err error) {
 	var (
 		d   = db.GetDb()
 		rp  = repository.NewAdmin()
@@ -186,7 +185,7 @@ func (admin) RefreshToken(req request.AdminUserRefreshToken) (res *responsemodel
 			return err
 		}
 
-		res = &responsemodel.AdminLoginResponse{
+		res = &openapi.AdminUserSignInResponse{
 			AccessToken:  accessToken,
 			RefreshToken: token.RefreshToken,
 		}

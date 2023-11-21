@@ -1,11 +1,11 @@
 package server
 
 import (
-	"ema_sound_clone_api/config"
-	"ema_sound_clone_api/internal/db"
-	"ema_sound_clone_api/pkg/router"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	"github.com/trungaria/auth_api.git/config"
+	"github.com/trungaria/auth_api.git/internal/db"
+	"github.com/trungaria/auth_api.git/pkg/router"
 )
 
 func Boostrap(e *echo.Echo) {

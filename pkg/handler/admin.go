@@ -1,30 +1,16 @@
 package handler
 
 import (
-	"ema_sound_clone_api/internal/utils/response"
-	"ema_sound_clone_api/pkg/model/request"
-	"ema_sound_clone_api/pkg/query"
-	"ema_sound_clone_api/pkg/usecase"
 	"github.com/labstack/echo/v4"
+	"github.com/trungaria/auth_api.git/internal/utils/response"
+	"github.com/trungaria/auth_api.git/pkg/handler/openapi"
+	"github.com/trungaria/auth_api.git/pkg/query"
+	"github.com/trungaria/auth_api.git/pkg/usecase"
 )
 
-type Admin interface {
-	CreateAdminUserByDev(c echo.Context) error
-	SignIn(c echo.Context) error
-	RefreshToken(c echo.Context) error
-	GetAllAdminUser(c echo.Context) error
-}
-
-type admin struct {
-}
-
-func NewAdmin() Admin {
-	return &admin{}
-}
-
-func (admin) CreateAdminUserByDev(c echo.Context) error {
+func (h OpenAPIHandler) PostV1Admins(c echo.Context) error {
 	var (
-		req request.AdminUserCreateByDevRequest
+		req openapi.AdminUserCreateRequest
 		uc  = usecase.NewAdmin()
 	)
 
@@ -40,9 +26,9 @@ func (admin) CreateAdminUserByDev(c echo.Context) error {
 	return response.R200(c, res)
 }
 
-func (admin) SignIn(c echo.Context) error {
+func (h OpenAPIHandler) PostV1AdminUserSignIn(c echo.Context) error {
 	var (
-		req request.AdminUserLoginRequest
+		req openapi.AdminUserSignInRequest
 		uc  = usecase.NewAdmin()
 	)
 
@@ -58,17 +44,8 @@ func (admin) SignIn(c echo.Context) error {
 	return response.R200(c, res)
 }
 
-func (admin) RefreshToken(c echo.Context) error {
-	var (
-		req request.AdminUserRefreshToken
-		uc  = usecase.NewAdmin()
-	)
-
-	if err := c.Bind(&req); err != nil {
-		return response.R400(c, nil, err.Error())
-	}
-
-	res, err := uc.RefreshToken(req)
+func (h OpenAPIHandler) PostV1AdminUserAccessToken(c echo.Context, params openapi.PostV1AdminUserAccessTokenParams) error {
+	res, err := h.AdminUsecase.RefreshToken(params)
 	if err != nil {
 		return response.R400(c, nil, err.Error())
 	}
@@ -76,7 +53,7 @@ func (admin) RefreshToken(c echo.Context) error {
 	return response.R200(c, res)
 }
 
-func (admin) GetAllAdminUser(c echo.Context) error {
+func (h OpenAPIHandler) GetV1AdminUsers(c echo.Context) error {
 	var (
 		q = query.NewAdmin()
 	)

@@ -1,0 +1,262 @@
+openapi: 3.1.0
+x-stoplight:
+  id: abt9v2395e98o
+info:
+  title: admin
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  /v1/admins/users:
+    get:
+      summary: Your GET endpoint
+      tags: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+      operationId: get-v1-admin-users
+      x-stoplight:
+        id: 9ayp219dykktr
+      security:
+        - bearer: []
+      description: ''
+    parameters: []
+  /v1/admins:
+    post:
+      summary: Create admin user
+      operationId: post-v1-admins
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserCreateResponse'
+      x-stoplight:
+        id: c0x7lqgek9129
+      description: 'Create admin user with dev api key '
+      requestBody:
+        $ref: '#/components/requestBodies/AdminUserCreateRequest'
+      parameters: []
+      security:
+        - apiKey: []
+      deprecated: true
+    parameters: []
+  /v1/admins/sign-in:
+    post:
+      summary: ''
+      operationId: post-v1-admin-user-sign-in
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserSignInResponse'
+            application/xml:
+              schema:
+                type: object
+                properties: {}
+        '400':
+          description: Bad Request
+        '401':
+          description: Unauthorized
+      x-stoplight:
+        id: n1tj9mehhjtp0
+      description: admin user sign in
+      parameters: []
+      requestBody:
+        $ref: '#/components/requestBodies/AdminUserSignInRequest'
+      deprecated: true
+    parameters: []
+  /v1/admins/access-token:
+    post:
+      summary: ''
+      operationId: post-v1-admin-user-access-token
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserSignInResponse'
+        '400':
+          description: Bad Request
+      x-stoplight:
+        id: 5r3jtg3log06i
+      description: get access token by refresh token
+      parameters:
+        - $ref: '#/components/parameters/refreshToken'
+      deprecated: true
+    parameters: []
+components:
+  schemas:
+    AdminUser:
+      title: AdminUser
+      x-stoplight:
+        id: g0v1lkwkgo63x
+      type: object
+      examples:
+        - id: string
+      properties:
+        id:
+          type: integer
+          x-stoplight:
+            id: odunvr6v40d2m
+        name:
+          type: string
+          x-stoplight:
+            id: uxxu13drx6oij
+        email:
+          type: string
+          x-stoplight:
+            id: 51it6agq2jjq0
+      required:
+        - id
+        - name
+        - email
+    AdminUsers:
+      title: AdminUsers
+      x-stoplight:
+        id: 43tjdlneepjx6
+      type: array
+      items:
+        $ref: '#/components/schemas/AdminUser'
+        x-stoplight:
+          id: qfiv8dpe0oxpy
+    AdminUserSignInResponse:
+      title: AdminUserSignInResponse
+      x-stoplight:
+        id: 479ww6s4u86xq
+      type: object
+      properties:
+        id:
+          type: string
+          x-stoplight:
+            id: isq1nvntwstbv
+        access-token:
+          type: string
+          x-stoplight:
+            id: 90x7k04pfna7q
+        refresh-token:
+          type: string
+          x-stoplight:
+            id: va57i8swt3hri
+        yourself:
+          $ref: '#/components/schemas/AdminUser'
+          x-stoplight:
+            id: 6ru19nkafruqk
+      required:
+        - id
+        - access-token
+        - refresh-token
+    AdminUserCreateResponse:
+      title: AdminUserCreateResponse
+      x-stoplight:
+        id: vf7n0z9miz1i4
+      type: object
+      properties:
+        email:
+          type: string
+          x-stoplight:
+            id: tj7roxkkpgksx
+        password:
+          type: string
+          x-stoplight:
+            id: h07sdq8davkzr
+        name:
+          type: string
+          x-stoplight:
+            id: xqrp3rohfo4xv
+      required:
+        - email
+        - password
+        - name
+    AdminUserResponse:
+      title: AdminUserResponse
+      x-stoplight:
+        id: 88qo8w4cv6v97
+      type: object
+      properties:
+        adminUsers:
+          $ref: '#/components/schemas/AdminUsers'
+          x-stoplight:
+            id: im77k2squzhiw
+        total:
+          type: integer
+          x-stoplight:
+            id: qjfops8im6ocd
+      required:
+        - total
+  responses: {}
+  requestBodies:
+    AdminUserSignInRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                x-stoplight:
+                  id: vzd24i4gnzl07
+              password:
+                type: string
+                x-stoplight:
+                  id: evkuz1mmenlat
+            required:
+              - email
+              - password
+        application/xml:
+          schema:
+            type: object
+            properties: {}
+        multipart/form-data:
+          schema:
+            type: object
+            properties: {}
+      description: ''
+    AdminUserCreateRequest:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              email:
+                type: string
+                x-stoplight:
+                  id: i5ndm1la3v97l
+              name:
+                type: string
+                x-stoplight:
+                  id: 7cvyc0yo1sfqy
+            required:
+              - email
+              - name
+  parameters:
+    refreshToken:
+      name: refreshToken
+      in: query
+      required: true
+      schema:
+        type: string
+      description: Refresh token
+    devApikey:
+      name: apikey
+      in: query
+      required: true
+      schema:
+        type: string
+      description: dev api key
+  securitySchemes:
+    apiKey:
+      name: apiKey
+      type: apiKey
+      in: query
+    bearer:
+      type: http
+      scheme: bearer
