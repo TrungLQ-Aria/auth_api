@@ -17,10 +17,14 @@ type Token struct {
 	IssueAt      time.Time
 }
 
+const (
+	Expiration = time.Hour * 24
+)
+
 func NewClaims(id uuid.UUID, accountID string, signInID string, now time.Time) Claims {
 	return Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(now.Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(now.Add(Expiration)),
 			IssuedAt:  jwt.NewNumericDate(now),
 			NotBefore: jwt.NewNumericDate(now),
 			Issuer:    "auth-admin",

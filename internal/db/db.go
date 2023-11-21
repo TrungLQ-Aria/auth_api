@@ -1,8 +1,8 @@
 package db
 
 import (
-	"ema_sound_clone_api/config"
-	"ema_sound_clone_api/pkg/model/entity"
+	"github.com/trungaria/auth_api.git/config"
+	"github.com/trungaria/auth_api.git/pkg/model/entity"
 	"fmt"
 	"github.com/labstack/gommon/log"
 	"gorm.io/driver/mysql"

@@ -1,14 +1,14 @@
 package query
 
 import (
-	"ema_sound_clone_api/internal/db"
-	"ema_sound_clone_api/pkg/model/entity"
-	responsemodel "ema_sound_clone_api/pkg/model/response"
+	"github.com/trungaria/auth_api.git/internal/db"
+	"github.com/trungaria/auth_api.git/pkg/handler/openapi"
+	"github.com/trungaria/auth_api.git/pkg/model/entity"
 )
 
 type Admin interface {
-	FindAllAdminUser() (*responsemodel.ListAdminUsersResponse, error)
-	ConvertToResponse(adminUser entity.AdminUser) responsemodel.AdminUserDetail
+	FindAllAdminUser() (*openapi.AdminUserResponse, error)
+	ConvertToResponse(adminUser entity.AdminUser) openapi.AdminUser
 }
 
 type admin struct {
@@ -18,16 +18,14 @@ func NewAdmin() Admin {
 	return &admin{}
 }
 
-func (*admin) ConvertToResponse(adminUser entity.AdminUser) responsemodel.AdminUserDetail {
-	return responsemodel.AdminUserDetail{
-		Name:      adminUser.Name,
-		Email:     adminUser.Email,
-		CreatedAt: adminUser.CreatedAt,
-		UpdatedAt: adminUser.UpdatedAt,
+func (*admin) ConvertToResponse(adminUser entity.AdminUser) openapi.AdminUser {
+	return openapi.AdminUser{
+		Name:  adminUser.Name,
+		Email: adminUser.Email,
 	}
 }
 
-func (q *admin) FindAllAdminUser() (res *responsemodel.ListAdminUsersResponse, err error) {
+func (q *admin) FindAllAdminUser() (res *openapi.AdminUserResponse, err error) {
 	var (
 		d      = db.GetDb()
 		founds = []entity.AdminUser{}
@@ -39,13 +37,13 @@ func (q *admin) FindAllAdminUser() (res *responsemodel.ListAdminUsersResponse, e
 		return nil, err
 	}
 
-	adminUsers := make([]responsemodel.AdminUserDetail, len(founds))
+	adminUsers := make([]openapi.AdminUser, len(founds))
 
 	for i, f := range founds {
 		adminUsers[i] = q.ConvertToResponse(f)
 	}
 
-	return &responsemodel.ListAdminUsersResponse{
-		AdminUsers: adminUsers,
+	return &openapi.AdminUserResponse{
+		AdminUsers: &adminUsers,
 	}, nil
 }

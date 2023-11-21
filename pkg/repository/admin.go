@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"ema_sound_clone_api/internal/db"
-	"ema_sound_clone_api/pkg/model/entity"
+	"github.com/trungaria/auth_api.git/internal/db"
+	"github.com/trungaria/auth_api.git/pkg/model/entity"
 	"gorm.io/gorm"
 )
 

@@ -1,26 +1,29 @@
 package router
 
 import (
-	"ema_sound_clone_api/config"
-	"ema_sound_clone_api/pkg/handler"
-	routermiddleware "ema_sound_clone_api/pkg/router/middleware"
 	"github.com/labstack/echo/v4"
+	"github.com/trungaria/auth_api.git/config"
+	"github.com/trungaria/auth_api.git/pkg/handler/openapi"
+	routermiddleware "github.com/trungaria/auth_api.git/pkg/router/middleware"
 )
 
-func VersionOne(v1 *echo.Group, env config.Env) {
+func VersionOne(v1 *echo.Group, env config.Env, si openapi.ServerInterface) {
 	adminGroup := v1.Group("/admins")
 
 	var (
-		h         = handler.NewAdmin()
 		authDev   = routermiddleware.DevAPIKeyAuthentication(env)
 		authAdmin = routermiddleware.AdminAuthentication(env)
 	)
 
-	adminGroup.POST("", h.CreateAdminUserByDev, authDev)
+	wrap := openapi.ServerInterfaceWrapper{
+		Handler: si,
+	}
 
-	adminGroup.POST("/sign-in", h.SignIn)
+	adminGroup.POST("", wrap.PostV1Admins, authDev)
 
-	adminGroup.POST("/access-token", h.RefreshToken)
+	adminGroup.POST("/sign-in", wrap.PostV1AdminUserSignIn)
 
-	adminGroup.GET("", h.GetAllAdminUser, authAdmin)
+	adminGroup.POST("/access-token", wrap.PostV1AdminUserAccessToken)
+
+	adminGroup.GET("", wrap.GetV1AdminUsers, authAdmin)
 }

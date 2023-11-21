@@ -1,9 +1,9 @@
 package routermiddleware
 
 import (
-	"ema_sound_clone_api/config"
-	"ema_sound_clone_api/internal/utils/auth"
-	"ema_sound_clone_api/internal/utils/response"
+	"github.com/trungaria/auth_api.git/config"
+	"github.com/trungaria/auth_api.git/internal/utils/auth"
+	"github.com/trungaria/auth_api.git/internal/utils/response"
 	"github.com/labstack/echo/v4"
 	"strconv"
 	"strings"
